@@ -1,8 +1,7 @@
-import sys
 from matplotlib import pyplot as plt
 import numpy as np
 from skimage.io import imread
-import skimage, json, random, os, cv2, time
+import sys, skimage, json, random, os, cv2, time
 import tensorflow as tf
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
@@ -15,7 +14,7 @@ from segmentation_models import Unet, FPN, Linknet, PSPNet
 from segmentation_models import get_preprocessing
 from skimage import exposure
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
-from acat_global import *
+from global_defs import *
 from sklearn.metrics import brier_score_loss
 
 def conv(filters, kernel_size = 3, stride = 2):
