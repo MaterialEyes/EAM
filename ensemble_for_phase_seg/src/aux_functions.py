@@ -1,23 +1,21 @@
 import sys
-
 from matplotlib import pyplot as plt
 import numpy as np
 from skimage.io import imread
 import skimage, json, random, os, cv2, time
+import tensorflow as tf
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
-import tensorflow as tf
 from tensorflow.keras.optimizers import *
 import tensorflow.keras.backend as K
+import tensorflow.keras.backend as K
+from tensorflow.python.framework import tensor_util
 from tensorflow.keras.utils import plot_model
 from segmentation_models import Unet, FPN, Linknet, PSPNet
 from segmentation_models import get_preprocessing
-import tensorflow.keras.backend as K
-from tensorflow.python.framework import tensor_util
 from skimage import exposure
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
 from acat_global import *
-#from acat_global import *
 from sklearn.metrics import brier_score_loss
 
 def conv(filters, kernel_size = 3, stride = 2):
