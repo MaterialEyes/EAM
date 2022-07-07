@@ -12,3 +12,6 @@
             └── optical_flow_for_phonon_fingerprints/
                 ├── data
                 └── src
+
+
+## To do: Add conda environment to run the code
