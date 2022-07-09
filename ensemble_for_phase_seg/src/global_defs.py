@@ -4,11 +4,14 @@ end = 7
 num_train = end-start
 aug_per_img = 4
 N=1
+num_instances_e2 = 5
 
-lr = 0.1
-batch_size = 32
+lr_per_replica = 0.1
+batch_size_per_replica = 8
 epochs = 20
 verbose = 1
+val_split = 0.1
+arch = "unet"
 single_backbone_for_training = 'inceptionv3'
 backbones_for_inference = ['densenet201', 'densenet169', 'densenet121']
 new_training = False
