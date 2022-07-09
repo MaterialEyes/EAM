@@ -17,31 +17,25 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve
 from global_defs import *
 from sklearn.metrics import brier_score_loss
 
-def conv(filters, kernel_size = 3, stride = 2):
-    x = tf.keras.layers.Conv2D(filters = filters, kernel_size = kernel_size, activation = 'relu', kernel_regularizer=tf.keras.regularizers.l2())
-    return x
-
 def preprocess_img(img):
-    #img = exposure.equalize_adapthist(img)
-    img = cv2.resize(img, (s1,s2), interpolation=cv2.INTER_CUBIC)
+    img = cv2.resize(img, (w,h), interpolation=cv2.INTER_CUBIC)
     thi, bw = cv2.threshold(img , np.median(img), 255, cv2.THRESH_BINARY) 
-    w, h  = img.shape
     bw = (255.0 - bw)/255.
     for i in range(w):
         for j in range(h):
             img[i][j] = bw[i][j]*img[i][j]
-    img = np.reshape(img, (s1,s2,1))
+    img = np.reshape(img, (w,h,1))
     img = img/np.max(img)
     return img
 
 def preprocess_mask(mask):
-    mask = cv2.resize(mask, (s1,s2), interpolation=cv2.INTER_CUBIC)
+    mask = cv2.resize(mask, (h,w), interpolation=cv2.INTER_CUBIC)
     mask = mask/255.
-    mask = np.reshape(mask, (s1,s2,1))
+    mask = np.reshape(mask, (h,w,1))
     return mask
 
 def preprocess_test_mask(img_gt):
-    img_gt = cv2.resize(img_gt, (s1,s2), interpolation=cv2.INTER_CUBIC)
+    img_gt = cv2.resize(img_gt, (h,w), interpolation=cv2.INTER_CUBIC)
     thi, img_gt = cv2.threshold(img_gt , np.median(img_gt), 255, cv2.THRESH_BINARY) 
     img_gt = img_gt/255
     return img_gt
@@ -53,41 +47,36 @@ def smooth(img):
 
 def read_data(img_mask_path, pp=False):
     img_in = imread(img_mask_path[0])
-    #img_in = exposure.equalize_adapthist(img_in)
     if pp==True:
         img_in = preprocess_img(img_in)
     else:
-        img_in = cv2.resize(img_in, (s1,s2), interpolation=cv2.INTER_CUBIC)
-        img_in = np.reshape(img_in, (s1,s2,1))
+        img_in = cv2.resize(img_in, (h,w), interpolation=cv2.INTER_CUBIC)
+        img_in = np.reshape(img_in, (h,w,1))
         img_in = img_in/np.max(img_in)
-    mask_in = imread(img_mask_path[1]) #get_mask_from_coco(img_mask_path[1]) 
+    mask_in = imread(img_mask_path[1]) #get_mask_from_coco(img_mask_path[1]) : use this in case you need to get mask from an annotation directly 
     mask_in = preprocess_mask(mask_in)
     return (img_in, mask_in)
 
 def get_aug_dataset(data_paths, pp = False):
     num_total = len(data_paths)
-    out_imgs = np.zeros((aug*num_total,)+(s1,s2)+(1,)) # define the input images for the model
-    out_masks = np.zeros((aug*num_total,)+(s1,s2)+(2,)) # define the input masks for the model
+    out_imgs = np.zeros((aug*num_total,)+(h,w)+(1,)) 
+    out_masks = np.zeros((aug*num_total,)+(h,w)+(2,))
     for i, img_mask_path in enumerate(data_paths):
         img, mask = read_data(img_mask_path, pp) # import images, save as array, crop and resize the image to (256,256,1)
-        #mask_flipped = np.flip(mask, 0)
         mask = tf.keras.utils.to_categorical(mask, num_classes = 2, dtype ="uint8")
-        #mask_flipped = tf.keras.utils.to_categorical(mask_flipped, num_classes = 2, dtype ="uint8")
         out_imgs[aug*i,...] = img # create single array of images
         out_imgs[aug*i + 1, ...] = np.flip(img, 0)
         out_imgs[aug*i + 2, ...] = np.flip(img, 1)
         out_imgs[aug*i + 3, ...] = np.flip(np.flip(img,0), 1)
-        #out_imgs[aug*i + 4, ...] = skimage.util.random_noise(img)
-        out_masks[aug*i,...] = mask # create single array of masks
+        out_masks[aug*i,...] = mask 
         out_masks[aug*i + 1,...] = np.flip(mask, 0) #mask_flipped
         out_masks[aug*i + 2,...] = np.flip(mask, 1) #mask_flipped
         out_masks[aug*i + 3,...] = np.flip(np.flip(mask, 0), 1) 
-        #out_masks[aug*i + 4,...] = mask
     return out_imgs, out_masks
 
 def get_test_dataset():
-    out_imgs = np.zeros((1,)+(s1,s2)+(1,))
-    out_masks = np.zeros((1,)+(s1,s2)+(2,))
+    out_imgs = np.zeros((1,)+(h,w)+(1,))
+    out_masks = np.zeros((1,)+(h,w)+(2,))
     for i, img_mask_path in enumerate(test_paths):
         img, mask = read_data(img_mask_path)
         out_imgs[i,...] = img
