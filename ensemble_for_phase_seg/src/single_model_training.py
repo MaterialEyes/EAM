@@ -2,7 +2,7 @@
 
 import sys
 if len(sys.argv) != 2:
-    print('Required input is python acat_ice <backbone>')
+    print('Required input is python single_model_training <backbone>')
     sys.exit()
 from matplotlib import pyplot as plt
 import numpy as np
