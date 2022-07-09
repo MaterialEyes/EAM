@@ -192,10 +192,10 @@ def get_roc_stats(models, test_dir = '/global/cscratch1/sd/ab1992/ice_kdd/D1/tes
     y_pred = []
     for i in range(1,test_size+1):
         img = imread(test_dir + f"stack_{i}.png")
-        img = np.reshape(preprocess_img(img), (1,s1,s2,1))
+        img = np.reshape(preprocess_img(img), (1,h,w,1))
         pred_means, pred_ensemble, sdev = ensemble_prediction(models, img)  # get prediction for each pixel in the image
         true_seg = imread(test_dir + f"stack_{i}_label.png")
-        true_seg = np.reshape(true_seg, (s1,s2,1))//255
+        true_seg = np.reshape(true_seg, (h,w,1))//255
         y_true.append(true_seg.flatten())  # flatten all targets
         y_pred.append(pred_ensemble.flatten())  # flatten all predictions
     y_true = np.concatenate(y_true, axis=0)
@@ -211,10 +211,10 @@ def get_pr_stats(models):
     y_pred = []
     for i in range(1,test_size+1):
         img = imread(test_dir + f"stack_{i}.png")
-        img = np.reshape(preprocess_img(img), (1,s1,s2,1))
+        img = np.reshape(preprocess_img(img), (1,h,w,1))
         pred_means, pred_ensemble, sdev = ensemble_prediction(models, img)  # get prediction for each pixel in the image
         true_seg = imread(test_dir + f"stack_{i}_label.png")
-        true_seg = np.reshape(true_seg, (s1,s2,1))//255
+        true_seg = np.reshape(true_seg, (h,w,1))//255
         y_true.append(true_seg.flatten())  # flatten all targets
         y_pred.append(pred_ensemble.flatten())  # flatten all predictions
     y_true = np.concatenate(y_true, axis=0)
@@ -285,24 +285,24 @@ def get_intersection(img, lines_x, lines_y):
     return intersections
 
 def get_curvature(img):
-    for i in range(0, s1, 2):   #Getting the lowest x line that intersects with the mask
+    for i in range(0, h, 2):   #Getting the lowest x line that intersects with the mask
         if np.sum(img[i])!=0.0:
             low_x = i
             break
-    for i in range(low_x, s1, 2):  # Getting the highest x line that intersects with the mask
+    for i in range(low_x, h, 2):  # Getting the highest x line that intersects with the mask
         if np.sum(img[i])==0.0:
             high_x = i-1
             break
     x = []
     y = []
     for i in range(low_x, high_x+1, 2):  # Getting the intersection closest to left axis
-        for j in range(s1):
+        for j in range(h):
             if img[i][j] >= 0.8:
                 x.append(i)
                 y.append(j)
                 break
     for i in range(high_x, low_x-1, -2):  # Getting the intersection closest to right axis
-        for j in range(s1-1, 0, -1):
+        for j in range(h-1, 0, -1):
             if img[i][j] >= 0.8:
                 x.append(i)
                 y.append(j)
