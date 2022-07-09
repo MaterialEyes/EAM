@@ -86,20 +86,16 @@ def get_test_dataset():
 def get_shuffled_datasets(images, masks):
     indices = np.arange(1, len(images)+1)
     random.shuffle(indices)
-
-    images_shuffled = np.zeros((len(images),)+(s1,s2)+(1,))
-    masks_shuffled = np.zeros((len(images),)+(s1,s2)+(2,))
-
+    images_shuffled = np.zeros((len(images),)+(h,w)+(1,))
+    masks_shuffled = np.zeros((len(images),)+(h,w)+(2,))
     for n in range(len(indices)):
         images_shuffled[n,...] = images[indices[n]-1,...]
         masks_shuffled[n,...] = masks[indices[n]-1,...]
-    
     return images_shuffled, masks_shuffled
 
 def model_init(arch, backbone):
-    #with strategy.scope():
+    #with strategy.scope():  # Activate this option if you are implementing in a distributed manner
     preprocess_input = get_preprocessing(backbone)
-    N = 1
     if arch == "unet":
         base_model = Unet(backbone, classes = 2, encoder_weights='imagenet')
     if arch == "fpn":
@@ -107,14 +103,14 @@ def model_init(arch, backbone):
     if arch == "linknet":
         base_model = Linknet(backbone, classes = 2, encoder_weights='imagenet')
     inp = Input(shape=(None, None, N))
-    l1 = Conv2D(3, (1, 1))(inp) # map N channels data to 3 channels
+    l1 = Conv2D(3, (1, 1))(inp) 
     out = base_model(l1)
     model_1 = Model(inp, out, name=base_model.name)
     return model_1
 
+# Use this option if you want a modified model that just provides the softmax output
 def trunc_model_init(arch, backbone):
     preprocess_input = get_preprocessing(backbone)
-    N = 1
     if arch == "unet":
         base_model = Unet(backbone, classes = 2, encoder_weights='imagenet')
     if arch == "fpn":
@@ -127,23 +123,21 @@ def trunc_model_init(arch, backbone):
     out = new_base_model(l1)
     model_1 = Model(inp, out)
     return model_1
-
-#"resnet18", "resnet34", "resnet50", "resnet101", "resnet152"
     
-def get_ensemble_models(backbones = ["densenet169", "vgg19", "inceptionresnetv2", "inceptionv3", "seresnet50", "vgg16"], weight_dir = '/global/cscratch1/sd/ab1992/acat_trained_weights', train_iter = 1):
-    # Currently, only using two backbones because of issues with large file storage on git
+def get_ensemble_models(backbones = ["densenet169", "vgg19", "inceptionresnetv2", "inceptionv3", "seresnet50", "vgg16"], train_iter = 1):
     arch = 'unet'
     models = []
+    ## The following part of code needs some development to make it more general in terms of defining re-training.
     for backbone in backbones:
         model = trunc_model_init(arch, backbone)
         if train_iter==1:
-            model.load_weights(weight_dir + f'/{backbone}/trained_weights_{backbone}_{arch}_8.h5') 
+            model.load_weights(weights_dir + f'/{backbone}/trained_weights_{backbone}_{arch}_8.h5') 
         elif train_iter==2:
-            model.load_weights(weight_dir + f'/{backbone}/retrained_weights_recrys_{backbone}_{arch}_8.h5') 
+            model.load_weights(weights_dir + f'/{backbone}/retrained_weights_recrys_{backbone}_{arch}_8.h5') 
         elif train_iter==3:
-            model.load_weights(weight_dir + f'/{backbone}/retrained_weights_recrys_c3_{backbone}_{arch}_8.h5') 
+            model.load_weights(weights_dir + f'/{backbone}/retrained_weights_recrys_c3_{backbone}_{arch}_8.h5') 
         elif train_iter==4:
-            model.load_weights(weight_dir + f'/{backbone}/retrained_weights_recrys_c3_c8_{backbone}_{arch}_8.h5') 
+            model.load_weights(weights_dir + f'/{backbone}/retrained_weights_recrys_c3_c8_{backbone}_{arch}_8.h5') 
         models.append(model)
     return models
 
@@ -151,7 +145,7 @@ def get_ensemble2_models(backbone = 'vgg19'):
     weight_dir = f'/global/cscratch1/sd/ab1992/acat_trained_weights/{backbone}_ensemble2'
     arch = 'unet'
     models = []
-    for i in range(1,6):
+    for i in range(1,num_instances_e2+1):
         model = trunc_model_init(arch, backbone)
         model.load_weights(weight_dir + f'/trained_weights_{backbone}_{arch}_8_{i}.h5') 
         models.append(model)
@@ -161,18 +155,18 @@ def ensemble_prediction(models, image):
     preds = []
     for model in models:
         preds.append(model.predict_on_batch(image))
-    pred_probs = np.zeros((len(preds), s1,s2))
+    pred_probs = np.zeros((len(preds), h,w))
     for m in range(len(models)):
-        for x in range(s1):
-            for y in range(s2):
+        for x in range(w):
+            for y in range(h):
                 pred_probs[m][x][y] = np.exp(-preds[m][0][x][y][0])/(1 + np.exp(-preds[m][0][x][y][0]))
-    pred_mean = np.zeros((s1,s2))
+    pred_mean = np.zeros((h,w))
     for pred_prob in pred_probs:
         pred_mean += pred_prob[:,:]/(len(preds))
     pred_ensemble = np.where(pred_mean > 0.5, 1.0, 0.0)
-    sdev = np.zeros((s1,s2))
-    for i in range(s1):
-        for j in range(s2):
+    sdev = np.zeros((h,w))
+    for i in range(h):
+        for j in range(h):
             for m in range(len(preds)):
                 sdev[i][j] += (pred_probs[m][i][j] - pred_mean[i][j])**2
             sdev[i][j] = sdev[i][j]/len(preds)
@@ -181,16 +175,16 @@ def ensemble_prediction(models, image):
 def get_ppca_sdev_dice(models, out_imgs, out_masks):
     stats = []
     for i, img in enumerate(out_imgs):
-        img = np.reshape(img, (1,s1,s2,1))
+        img = np.reshape(img, (1,h,w,1))
         pred_mean, pred_ensemble, sdev = ensemble_prediction(models, img)
         ppa = 0
-        for x in range(s1):
-            for y in range(s2):
+        for x in range(h):
+            for y in range(w):
                 if pred_ensemble[x][y] == out_masks[i][x][y][1]:
                     ppa += 1
         dice = np.sum(out_masks[i][pred_ensemble==1])*2.0 / (np.sum(out_masks[i]) + np.sum(pred_ensemble))
         #brier = brier_score_loss(np.ravel(out_masks[i][...,1]), np.ravel(pred_mean))
-        stats.append([ppa/(s1*s2), np.sum(sdev)/(s1*s2), dice])
+        stats.append([ppa/(h*w), np.sum(sdev)/(h*w), dice])
     return stats
 
 def get_roc_stats(models, test_dir = '/global/cscratch1/sd/ab1992/ice_kdd/D1/testing/', test_size = 3):
