@@ -11,14 +11,15 @@ Specifically, the papers associated with each of the sub-folders are:
 
     .
         └── root/
-            ├── demos
             ├── readme.md
             ├── ensemble_for_phase_seg/
             │   ├── data
             │   └── src
+            │   └── demos
             └── optical_flow_for_phonon_fingerprints/
                 ├── data
                 └── src
+                └── demos
 
 
 ## To do: Add conda environment to run the code
