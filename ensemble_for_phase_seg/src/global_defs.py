@@ -13,6 +13,7 @@ verbose = 1
 val_split = 0.1
 arch = "unet"
 single_backbone_for_training = 'inceptionv3'
+backbones_for_training = ['densenet201', 'densenet169', 'densenet121', 'vgg19', 'vgg16', 'inceptionv2']
 backbones_for_inference = ['densenet201', 'densenet169', 'densenet121']
 new_training = False
 
