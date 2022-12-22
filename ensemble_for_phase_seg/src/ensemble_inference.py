@@ -1,7 +1,4 @@
 import sys
-if len(sys.argv) != 2:
-    print('Required input is python acat_ice <backbone>')
-    sys.exit()
 from matplotlib import pyplot as plt
 import numpy as np
 from skimage.io import imread
@@ -20,13 +17,14 @@ from acat_global import *
 from acat_aux_funcs import *
 
 strategy = tf.distribute.MirroredStrategy()
-backbone = sys.argv[1]  # The other option is to import the backbone name from global_defs
 
-models = get_ensemble_models(backbones = [backbone], train_iter=1)
-test_img_path = .. # complete this path
-img = cv2.imread(test_img_path)
-img = preprocess_img(img)
-img = np.reshape(img, (1, h, w, 1))
-pred_mean, pred_ensemble, sdev = ensemble_prediction(models, img)
-pred_mean_write_status = cv2.imwrite(inference_dir + "test_pred_mean.png", pred_mean*255.)
-pred_ensemble_write_status = cv2.imwrite(inference_dir + "test_pred_ensemble.png", pred_ensemble*255.)
+models = get_ensemble_models(backbones = backbones_for_inference, train_iter=1)
+test_files = os.listdir(testing_dir)
+for image_file_path in test_files:
+	filename = image_file_path.split('/')[-1].split('.')[0]
+	img = cv2.imread(image_file_path)
+	img = preprocess_img(img)
+	img = np.reshape(img, (1, h, w, 1))
+	pred_mean, pred_ensemble, sdev = ensemble_prediction(models, img)
+	pred_mean_write_status = cv2.imwrite(inference_dir + f"{filename}_mean_pred.png", pred_mean*255.)
+	pred_ensemble_write_status = cv2.imwrite(inference_dir + f"{filename}_std_dev.png", sdev*255.)

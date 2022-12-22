@@ -24,6 +24,7 @@ available_backbones = ['vgg16','vgg19','resnet18','resnet34','resnet50','resnet1
 
 root = "../" 
 training_dir = root + "data/training/"
+testing_dir = root + "data/testing/"
 inference_dir = root + "data/inference/" 
 weights_dir = root + "trained_weights/"
 metadata_dir = root
