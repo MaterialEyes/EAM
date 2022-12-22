@@ -1,6 +1,6 @@
 h, w = 512, 512
 start = 1
-end = 7
+end = 24
 num_train = end-start
 aug_per_img = 4
 N=1

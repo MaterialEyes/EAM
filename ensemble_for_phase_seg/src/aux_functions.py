@@ -94,7 +94,7 @@ def get_shuffled_datasets(images, masks):
     return images_shuffled, masks_shuffled
 
 def model_init(arch, backbone):
-    #with strategy.scope():  # Activate this option if you are implementing in a distributed manner
+    #with strategy.scope():  # Uncomment this line if you are implementing in a distributed manner
     preprocess_input = get_preprocessing(backbone)
     if arch == "unet":
         base_model = Unet(backbone, classes = 2, encoder_weights='imagenet')

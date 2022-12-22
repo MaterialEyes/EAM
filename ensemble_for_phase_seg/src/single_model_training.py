@@ -1,9 +1,10 @@
 ## This code is for the case when the model encoder type is obtained from the user
 
 import sys
-if len(sys.argv) != 2:
-    print('Required input is python single_model_training <backbone>')
-    sys.exit()
+# Use the following three lines if receiving the backbone name as input from the user
+#if len(sys.argv) != 2:                 
+#    print('Required input is python single_model_training <backbone>')
+#    sys.exit()
 from matplotlib import pyplot as plt
 import numpy as np
 from skimage.io import imread
@@ -25,8 +26,8 @@ image_mask_paths = [(training_dir + f"stack_{i}.png", training_dir + f"stack_{i}
 images, masks = get_aug_dataset(image_mask_paths, False)
 images_shuffled, masks_shuffled = get_shuffled_datasets(images, masks)
 strategy = tf.distribute.MirroredStrategy()
-backbone = sys.argv[1]  # The other option is to import the backbone name from global_defs
-print(backbone)
+backbone = single_backbone_for_training 
+#backbone = sys.argv[1]    #Use this line if the user is providing backbone name as input 
           
 if not os.path.exists(weights_dir + f'{backbone}'):
     os.mkdir(weights_dir + f'{backbone}')
