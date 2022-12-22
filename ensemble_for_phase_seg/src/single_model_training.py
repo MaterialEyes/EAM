@@ -8,18 +8,17 @@ from matplotlib import pyplot as plt
 import numpy as np
 from skimage.io import imread
 import skimage, json, random, os, cv2, time
+import tensorflow as tf
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
-import tensorflow as tf
 from tensorflow.keras.optimizers import *
 import tensorflow.keras.backend as K
 from tensorflow.keras.utils import plot_model
 from segmentation_models import Unet, FPN, Linknet, PSPNet
 from segmentation_models import get_preprocessing
-import tensorflow.keras.backend as K
 from tensorflow.python.framework import tensor_util
-from acat_global import *
-from acat_aux_funcs import *
+from global_defs import *
+from aux_funcs import *
 
 image_mask_paths = [(training_dir + f"stack_{i}.png", training_dir + f"stack_{i}_label.png") for i in range(start, end+1)] # store the image file paths for the training data
 
