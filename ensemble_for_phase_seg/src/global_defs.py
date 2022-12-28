@@ -5,6 +5,7 @@ num_train = end-start
 aug_per_img = 4
 N=1
 num_instances_e2 = 5
+num_frames_per_stack = 25
 
 lr_per_replica = 0.1
 batch_size_per_replica = 8

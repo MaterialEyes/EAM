@@ -35,7 +35,6 @@ try:
 except:
     print("Image shape is not in integer")
 
-num_frames_per_stack = 25
 num_stacks = num_frames//num_frames_per_stack
 try:
     assert num_stacks >= 1
