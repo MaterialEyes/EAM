@@ -28,3 +28,4 @@ testing_dir = root + "data/testing/"
 inference_dir = root + "data/inference/" 
 weights_dir = root + "trained_weights/"
 metadata_dir = root
+video_filename = root + "data/01-melt-recrystalization.avi"
