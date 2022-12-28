@@ -1,6 +1,9 @@
 ## Instructions
 
 ### Frame stacking
+* Set the 'video_filename' variable to the file path for the video.
+* Set the 'num_frames_per_stack' to the number of image frames required to form one stack.
+* Run image_extracter.py 
 
 ### Single model training
 * Assemble the image stacks for training in the training directory. 
